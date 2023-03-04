@@ -19,17 +19,29 @@
 ### Section 1. General Configuration
 ### ==========================================================================
 
+### Establish the operating system name
+KERNEL = $(shell uname -s)
+ifeq ($(KERNEL),Linux)
+	OS = $(shell uname -o)
+endif
+
+### Target Windows OS
+ifeq ($(OS),Windows_NT)
+	ifneq ($(COMP),ndk)
+		target_windows = yes
+	endif
+else ifeq ($(COMP),mingw)
+	target_windows = yes
+	ifeq ($(WINE_PATH),)
+		WINE_PATH = $(shell which wine)
+	endif
+endif
+
 ### Executable name
 ifeq ($(COMP),mingw)
 EXE = stockfish.exe
 else
 EXE = stockfish
-endif
-
-### Establish the operating system name
-KERNEL = $(shell uname -s)
-ifeq ($(KERNEL),Linux)
-	OS = $(shell uname -o)
 endif
 
 ### Installation dir definitions
@@ -393,13 +405,13 @@ ifeq ($(COMP),gcc)
 		LDFLAGS += -m$(bits)
 	endif
 
-	ifeq ($(arch),$(filter $(arch),armv7))
-		LDFLAGS += -latomic
-	endif
-
 	ifneq ($(KERNEL),Darwin)
-	   LDFLAGS += -Wl,--no-as-needed
+	   LDFLAGS += -Wl
 	endif
+endif
+
+ifeq ($(target_windows),yes)
+	LDFLAGS += -static
 endif
 
 ifeq ($(COMP),mingw)
@@ -437,14 +449,6 @@ ifeq ($(COMP),clang)
 	comp=clang
 	CXX=clang++
 	CXXFLAGS += -pedantic -Wextra -Wshadow
-
-	ifneq ($(KERNEL),Darwin)
-	ifneq ($(KERNEL),OpenBSD)
-	ifneq ($(KERNEL),FreeBSD)
-		LDFLAGS += -latomic
-	endif
-	endif
-	endif
 
 	ifeq ($(arch),$(filter $(arch),armv7 armv8))
 		ifeq ($(OS),Android)
@@ -667,7 +671,7 @@ endif
 ifeq ($(optimize),yes)
 ifeq ($(debug), no)
 	ifeq ($(comp),clang)
-		CXXFLAGS += -flto
+		CXXFLAGS += -flto=full
 		ifneq ($(findstring MINGW,$(KERNEL)),)
 			CXXFLAGS += -fuse-ld=lld
 		else ifneq ($(findstring MSYS,$(KERNEL)),)
