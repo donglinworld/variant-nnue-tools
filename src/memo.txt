@@ -1,12 +1,14 @@
 
 #generate_training_data
 ucci
+setoption UCI_Variant xiangqi
 setoption PruneAtShallowDepth false
 isready
 generate_training_data depth 4 count 100 keep_draws 1 eval_limit 32000 data_format bin
 
 #generate_validate_data 
 ucci
+setoption UCI_Variant xiangqi
 setoption PruneAtShallowDepth false
 isready
 generate_training_data depth 8 count 50 keep_draws 1 eval_limit 32000 data_format bin
