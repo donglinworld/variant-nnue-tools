@@ -1,3 +1,4 @@
+# Data generated on Mac OS can be used on Google Colab (Linux), but generated on Windows cannot work for Google Colab
 
 #generate_training_data
 ucci
